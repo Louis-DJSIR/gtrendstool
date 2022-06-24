@@ -11,10 +11,19 @@
 #' @examples
 
 benchmark <- function (terms, regions, source, category) {
-	region_list(regions)
+	selected_regions <- region_list(regions)
 
 	terms <- terms %>%
 		as_tibble()
 
 	names(terms) <- category
+	
+	df_combined <- selected_regions %>%
+		full_join(terms, by = character())
+	num <- 1
+	benchmark <- matrix(nrow = length(regions), ncol = 2)
+	
+# 	for (i in unique(df_combined$region)) {
+		
+	}
 }
