@@ -23,7 +23,7 @@ benchmark <- function (terms, regions, source, category) {
 	num <- 1
 	benchmark <- matrix(nrow = length(regions), ncol = 2)
 	
-# 	for (i in unique(df_combined$region)) {
+	for (i in unique(df_combined$region)) {
 		
 	}
 }
