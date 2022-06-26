@@ -44,5 +44,10 @@ categories_list <- function(category) {
 			}
 		}
 	}
+
+	if(nrow(cat_list >= 2)) {
+		warning("Multiple categories have been selected, before using this output further, please filter to the specific category of interest")
+	}
+
 	return(cat_list)
 }
