@@ -22,7 +22,7 @@ categories_list <- function(category) {
 		if(nrow(cat_list) >= 1) {
 			print(cat_list)
 
-			new_info <- readline(paste0(category, " received multiple matches, please specify a second term to further narrow the list of categories: "))
+			new_info <- readline(paste0(category, " received multiple category matches, please specify a second term to further narrow the list of categories: "))
 
 			cat_list2 <- cat_list %>%
 				dplyr::filter(grepl(tolower(as.character(new_info)), tolower(name), .))
@@ -31,16 +31,17 @@ categories_list <- function(category) {
 				cat_list <- cat_list
 				stop(paste0(new_info, " did not receive a match in the list of categories, please try again."))
 			}
+
 			if(nrow(cat_list2) == 1) {
 				cat_list <- cat_list2
 			}
+
 			if(nrow(cat_list2) > 1) {
 				print(cat_list2)
 				line_no <- readline(paste0(new_info, " received multiple matches, please specify which row number you would like to select: "))
 				cat_list <- cat_list2 %>%
 					dplyr::slice(as.numeric(line_no))
 			}
-
 		}
 	}
 	return(cat_list)
