@@ -13,7 +13,7 @@
 #'
 #' @examples
 
-gtrendsdl <- function (terms, regions, source, category, timeframe = NA, write = FALSE, path = tempdir()) {
+gtrendsdl <- function(terms, regions, source, category, timeframe = NA, write = FALSE, path = tempdir()) {
 	selected_regions <- region_list(regions)
 
 	if(is.na(timeframe)) {
