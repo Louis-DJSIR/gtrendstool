@@ -7,13 +7,13 @@
 #'
 #' @examples
 
-region_list <- function(regions) {
+region_list <- function(regions){
 
 	list_items <- vector(mode = "list", length = length(regions))
 
 	for (i in 1:length(regions)) {
 		if (grepl(",", regions[i])) {
-			region <- gsub(" ", "", strsplit(regions[i], ",")[[1]][1])
+			region <- strsplit(regions[i], ",")[[1]][1]
 			country <- gsub(" ", "", strsplit(regions[i], ",")[[1]][2])
 			code <- gtrendsR::countries %>%
 				dplyr::as_tibble() %>%
@@ -27,7 +27,7 @@ region_list <- function(regions) {
 				dplyr::rename(region = name) 
 
 			if(nrow(list_items[[i]]) != 1) {
-				stop(paste0("Error: ", regions[i], " does not correspond to a unique google trends region, if ", regions[i], " is a sub-national geography, please re-specify the region as ", paste0(regions[i], ", country")))
+				stop(paste0("Error: '", regions[i], "' does not correspond to a unique google trends region, if '", regions[i], "' is a sub-national geography, please re-specify the region as '", paste0(regions[i], ", country'")))
 			}
 		} else {
 			list_items[[i]] <- gtrendsR::countries %>%
@@ -35,7 +35,7 @@ region_list <- function(regions) {
 				dplyr::filter(name %in% toupper(regions[i])) %>% 
 				dplyr::rename(region = name)
 			if(nrow(list_items[[i]]) != 1) {
-				stop(paste0("Error: ", regions[i], " does not correspond to a unique google trends region, if ", regions[i], " is a sub-national geography, please re-specify the region as ", paste0(regions[i], ", country")))
+				stop(paste0("Error: '", regions[i], "' does not correspond to a unique google trends region, if '", regions[i], "' is a sub-national geography, please re-specify the region as '", paste0(regions[i], ", country'")))
 			}
 		}
 	}

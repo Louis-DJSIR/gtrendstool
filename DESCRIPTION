@@ -16,4 +16,5 @@ Imports:
     tidyr,
     dplyr,
     gtrendsR,
-    magrittr
+    magrittr,
+    progress
