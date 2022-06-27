@@ -17,4 +17,6 @@ Imports:
     dplyr,
     gtrendsR,
     magrittr,
-    progress
+    progress,
+    DT,
+    lubridate

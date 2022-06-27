@@ -11,10 +11,16 @@
 #'
 #' @examples
 
-benchmark <- function (terms, regions, source, category, timeframe = "today+5-y") {
+benchmark <- function(terms, regions, source, category, timeframe = NA) {
 	selected_regions <- region_list(regions)
 
 	selected_category <- categories_list(category)
+
+	if(is.na(timeframe)) {
+		timeframe <- time_selector()
+	} else {
+		timeframe <- timeframe
+	}
 
 	terms <- terms %>%
 		dplyr::as_tibble()
@@ -105,7 +111,9 @@ benchmark <- function (terms, regions, source, category, timeframe = "today+5-y"
 		dplyr::as_tibble() %>%
 		dplyr::mutate(category = selected_category$name) %>%
 		dplyr::rename(region = V1
-					  , benchmark = V2)
+					  , benchmark = V2) %>%
+		dplyr::left_join(selected_category, by = c("category" = "name")) %>%
+		dplyr::rename(category_id = id)
 
 	return(benchmark_mat)
 }
