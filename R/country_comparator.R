@@ -22,68 +22,134 @@ country_comparator <- function(local = FALSE, path = tempdir(), terms, regions, 
 	}
 	
 	df_peaks <- df_dl %>%
-		dplyr::filter(hits == "100") 
+		dplyr::filter(hits == "100")
 
-	# df_keywords <- df_peaks %>%
-	# 	dplyr::select(keyword) %>%
-	# 	unique()
+	leader <- df_peaks %>%
+		head(1)
 
-	# df_regions <- df_peaks %>%
-	# 	dplyr::select(region) %>%
-	# 	unique()
+	remainder <- df_peaks %>%
+		tail(-1)
 
-	# query <- vector(mode = "list", length = (nrow(df_peaks)-1))
+	pb <- progress::progress_bar$new(
+		format = "Comparing [:bar] :percent eta: :eta,  update: "
+		, total = nrow(remainder)+1
+		, clear = FALSE
+		, width = 60
+		)
 
-	# pb <- progress::progress_bar$new(
-	# 	format = "Generating queries [:bar] :percent eta: :eta"
-	# 	, total = (nrow(df_peaks)-1)
-	# 	, clear = FALSE
-	# 	, width = 60
-	# 	)
+	pb$tick()
 
-	i <- 1
+	for (i in 1:nrow(remainder)) {
+		query_temp <- dplyr::bind_rows(leader, remainder[i,]) %>%
+			dplyr::select(keyword, geo) %>%
+			as.matrix()
 
-	query <- dplyr::bind_rows(df_peaks[i,], df_peaks[i+1,])
+		gtrends_temp <- gtrendsR::gtrends(keyword = c(query_temp[1,1], query_temp[2,1])
+										  , geo = c(query_temp[1,2], query_temp[2,2])
+										  , time = df_peaks$time[1]
+										  , gprop = df_peaks$gprop[1]
+										  , category = df_peaks$category_id[1])
 
-	for (i in 1:(nrow(df_peaks)-1)) {
+		winner <- suppressMessages(gtrends_temp$interest_over_time %>%
+			dplyr::as_tibble() %>%
+			dplyr::filter(as.character(hits) == "100") %>%
+			dplyr::group_by(keyword, geo) %>%
+			dplyr::summarise(n = dplyr::n()) %>%
+			dplyr::ungroup() %>%
+			dplyr::arrange(desc(n)) %>%
+			head(1))
 
-		keyword <- as.vector(c(query$keyword[1], query$keyword[2]))
-		geo = as.vector(c(query$geo[1], query$geo[2]))
-		time = as.vector(c(query$time[1]))
-		gprop = as.vector(c(query$gprop[1]))
-		category = as.vector(c(query$category_id[1]))
+		loser <- gtrends_temp$interest_over_time %>%
+			dplyr::as_tibble() %>%
+			dplyr::filter(!(geo == winner$geo & keyword == winner$keyword)) %>%
+			head(1)
+			
+		leader$keyword <- winner$keyword
+		leader$geo <- winner$geo
 
-		gtrends_one <- gtrendsR::gtrends(keyword = keyword
-										 , geo = geo
-										 , time = time
-										 , gprop = gprop
-										 , category = category)
+		pb$tick()
 
-		gtrends_leader <- gtrends_one$interest_over_time %>%
-				dplyr::as_tibble() %>%
-				dplyr::filter(hits == "100") %>%
-				dplyr::group_by(keyword, geo) %>%
-				dplyr::summarise(n = dplyr::n()) %>%
-				dplyr::ungroup() %>%
-				dplyr::arrange(n) %>%
-				head(1) %>%
-				dplyr::select(keyword, geo)
+		if (i == nrow(remainder)) {
+				message(paste0("'", winner$keyword, "' in ", winner$geo, " is the most popular search term."))
+			} else {
+				message(paste0("'", winner$keyword, "' in ", winner$geo, " is more popular than '", loser$keyword, "' in ", loser$geo, "."))
+			}
+	}
+	df_more <- df_peaks %>%
+		dplyr::filter(geo == winner$geo & keyword == winner$keyword)
 
-		leading <- df_peaks %>%
-			dplyr::filter(keyword == gtrends_leader$keyword
-				   , geo == gtrends_leader$geo)
+	df_less <- df_peaks %>%
+		dplyr::filter(!(geo == winner$geo & keyword == winner$keyword))
 
-		if (i+2 <= nrow(df_peaks)) {
-			query <- dplyr::bind_rows(leading, df_peaks[i+2,])
-			message(paste0("'", leading$keyword, "' in ", leading$region, " is the leading search term."))
-		} else {
-			message(paste0("'", leading$keyword, "' in ", leading$region, " is the most popular search term."))
-		}
+	pb <- progress::progress_bar$new(
+		format = "Downloading [:bar] :percent eta: :eta,  update: "
+		, total = nrow(df_less)+1
+		, clear = FALSE
+		, width = 60
+		)
+
+	ratio <- vector(mode = "list", length = nrow(df_less))
+
+	pb$tick()
+
+	for (i in 1:nrow(df_less)) {
+		query_temp <- dplyr::bind_rows(df_more, df_less[i,]) %>%
+			dplyr::select(keyword, geo) %>%
+			as.matrix()
+
+		gtrends_temp <- gtrendsR::gtrends(keyword = c(query_temp[1,1], query_temp[2,1])
+										  , geo = c(query_temp[1,2], query_temp[2,2])
+										  , time = df_peaks$time[1]
+										  , gprop = df_peaks$gprop[1]
+										  , category = df_peaks$category_id[1])
+
+		ratio[[i]] <- gtrends_temp$interest_over_time %>%
+			dplyr::as_tibble() %>%
+			dplyr::group_by(keyword, geo) %>%
+			dplyr::mutate(hits = ifelse(hits == "<0", "0.5", hits)) %>%
+			dplyr::filter(as.numeric(hits) == max(as.numeric(hits))) %>%
+			dplyr::arrange(desc(hits)) %>%
+			dplyr::group_by(keyword, geo) %>%
+			dplyr::slice(1) %>%
+			dplyr::ungroup() %>%
+			dplyr::mutate(pair = paste0(keyword, "-", geo)) %>%
+			dplyr::mutate(pair = paste0(ratio_calc$pair[1], "/", ratio_calc$pair[2]),
+						  ratio = paste0(ratio_calc$hits[1], "/", ratio_calc$hits[2])) %>%
+			head(1) %>%
+			dplyr::select(pair, ratio)
+
+		# loser <- gtrends_temp$interest_over_time %>%
+		# 	dplyr::as_tibble() %>%
+		# 	dplyr::filter(!(geo == winner$geo & keyword == winner$keyword)) %>%
+		# 	head(1)
+			
+		# df_more$keyword <- winner$keyword
+		# df_more$geo <- winner$geo
+
+		pb$tick()
+
+		# if (i == nrow(df_less)) {
+		# 		message(paste0("'", winner$keyword, "' in ", winner$geo, " is the most popular search term."))
+		# 	} else {
+		# 		message(paste0("'", winner$keyword, "' in ", winner$geo, " is more popular than '", loser$keyword, "' in ", loser$geo, "."))
+		# 	}
 	}
 
-	for (i in 1:(nrow(df_peaks)-1)) {
-		query[[i]] <- dplyr::bind_rows(df_peaks[i,], df_peaks[i+1,])
-		pb$tick()
-		}
+	ratio_matrix <- do.call(dplyr::bind_rows, ratio)
 
+	return(ratio_matrix)
 }
+
+# DIAGNOSTICS PLEASE DELETE AFTER THIS LINE
+
+# terms <- c("tennis", "rugby", "football", "cricket", "formula 1")
+# regions <- c("Australia", "New South Wales, Australia", "Victoria, Australia", "New Zealand")
+# source <- "youtube"
+# category <- "sports"
+
+# country_comparator(
+# 	terms = c("tennis", "rugby", "football", "cricket", "formula 1")
+# 	, regions = c("Australia", "New South Wales, Australia", "Victoria, Australia", "New Zealand")
+# 	, source = "youtube"
+# 	, category = "sports"
+# 	)

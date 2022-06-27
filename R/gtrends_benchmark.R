@@ -57,7 +57,7 @@ benchmark <- function(terms, regions, source, category, timeframe = NA) {
 
 		query_list <- query_total
 
-		loops <- nrow(query_list)*nrow(selected_regions)
+		# loops <- nrow(query_list)*nrow(selected_regions)
 
 		for (k in 1:nrow(query_list)) {
 			gtrends_one <- gtrendsR::gtrends(keyword = c(query_list$sports[1], query_list$comparator[1])
@@ -72,7 +72,7 @@ benchmark <- function(terms, regions, source, category, timeframe = NA) {
 				dplyr::group_by(keyword) %>%
 				dplyr::summarise(n = dplyr::n()) %>%
 				dplyr::ungroup() %>%
-				dplyr::arrange(n) %>%
+				dplyr::arrange(desc(n)) %>%
 				head(1) %>%
 				dplyr::select(keyword)
 
@@ -117,3 +117,17 @@ benchmark <- function(terms, regions, source, category, timeframe = NA) {
 
 	return(benchmark_mat)
 }
+
+# DIAGNOSTICS PLEASE DELETE AFTER THIS LINE
+
+# terms <- c("tennis", "rugby", "football", "cricket", "formula 1")
+# regions <- c("Australia", "New South Wales, Australia", "Victoria, Australia", "New Zealand")
+# source <- "youtube"
+# category <- "sports"
+
+# gtrendsdl(
+# 	terms = c("tennis", "rugby", "football", "cricket", "formula 1")
+# 	, regions = c("Australia", "New South Wales, Australia", "Victoria, Australia", "New Zealand")
+# 	, source = "youtube"
+# 	, category = "sports"
+# 	)
