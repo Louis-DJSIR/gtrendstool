@@ -78,5 +78,8 @@ time_selector <- function (...) {
 			as.character()
 	}
 	message(paste0("'", dplyr::slice(times, as.numeric(answer3))$option , "' chosen, thank you."))
+	
+	assign("timeframe", timeframe, envir=globalenv())
+
 	return(timeframe)
 }

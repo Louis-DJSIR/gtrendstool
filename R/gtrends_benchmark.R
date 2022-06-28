@@ -14,9 +14,13 @@
 benchmark <- function(terms, regions, source, category, timeframe = NA) {
 	selected_regions <- region_list(regions)
 
-	selected_category <- categories_list(category)
+	if(!("selected_category" %in% ls())) {
+		categories_list(category)
+	} else {
+		selected_category <- selected_category
+	}
 
-	if(is.na(timeframe)) {
+	if(!("timeframe" %in% ls())) {
 		timeframe <- time_selector()
 	} else {
 		timeframe <- timeframe
@@ -115,6 +119,8 @@ benchmark <- function(terms, regions, source, category, timeframe = NA) {
 		dplyr::left_join(selected_category, by = c("category" = "name")) %>%
 		dplyr::rename(category_id = id)
 
+	assign("benchmark_out", benchmark_mat, envir=globalenv())
+
 	return(benchmark_mat)
 }
 
@@ -125,7 +131,7 @@ benchmark <- function(terms, regions, source, category, timeframe = NA) {
 # source <- "youtube"
 # category <- "sports"
 
-# gtrendsdl(
+# benchmark(
 # 	terms = c("tennis", "rugby", "football", "cricket", "formula 1")
 # 	, regions = c("Australia", "New South Wales, Australia", "Victoria, Australia", "New Zealand")
 # 	, source = "youtube"

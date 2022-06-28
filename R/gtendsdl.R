@@ -16,7 +16,7 @@
 gtrendsdl <- function(terms, regions, source, category, timeframe = NA, write = FALSE, path = tempdir()) {
 	selected_regions <- region_list(regions)
 
-	if(is.na(timeframe)) {
+	if(!("timeframe" %in% ls())) {
 		timeframe <- time_selector()
 	} else {
 		timeframe <- timeframe

@@ -51,5 +51,7 @@ categories_list <- function(category) {
 		warning("Multiple categories have been selected, before using this output further, please filter to the specific category of interest.")
 	}
 	message(paste0("'", head(cat_list, 1)$name , "' chosen, thank you."))
+
+	assign("selected_categories", cat_list, envir=globalenv())
 	return(cat_list)
 }
