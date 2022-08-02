@@ -13,16 +13,22 @@
 #'
 #' @examples
 
-gtrendsdl <- function(terms, regions, source, category, timeframe = NA, write = FALSE, path = tempdir()) {
+gtrendsdl <- function(terms, regions, source, category, write = FALSE, path = tempdir()) {
 	selected_regions <- region_list(regions)
 
-	if(!("timeframe" %in% ls())) {
-		timeframe <- time_selector()
+	if(!("selected_category" %in% ls())) {
+		selected_category <<- categories_list(category)
 	} else {
-		timeframe <- timeframe
+		selected_category <<- selected_category
 	}
 
-	df_regions <- benchmark(terms, regions, source, category, timeframe = timeframe) %>%
+	if(!("timeframe" %in% ls())) {
+		timeframe <<- time_selector()
+	} else {
+		timeframe <<- timeframe
+	}
+
+	df_regions <- benchmark(terms, regions, source, category) %>%
 		dplyr::left_join(selected_regions, by = "region")
 
 	terms <- terms %>%

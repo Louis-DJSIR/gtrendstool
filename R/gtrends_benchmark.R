@@ -11,19 +11,19 @@
 #'
 #' @examples
 
-benchmark <- function(terms, regions, source, category, timeframe = NA) {
+benchmark <- function(terms, regions, source, category) {
 	selected_regions <- region_list(regions)
 
 	if(!("selected_category" %in% ls())) {
-		categories_list(category)
+		selected_category <<- categories_list(category)
 	} else {
-		selected_category <- selected_category
+		selected_category <<- selected_category
 	}
 
 	if(!("timeframe" %in% ls())) {
-		timeframe <- time_selector()
+		timeframe <<- time_selector()
 	} else {
-		timeframe <- timeframe
+		timeframe <<- timeframe
 	}
 
 	terms <- terms %>%

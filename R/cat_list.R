@@ -52,6 +52,7 @@ categories_list <- function(category) {
 	}
 	message(paste0("'", head(cat_list, 1)$name , "' chosen, thank you."))
 
-	assign("selected_categories", cat_list, envir=globalenv())
+	assign("selected_category", cat_list, envir=globalenv())
+	selected_category <<- cat_list
 	return(cat_list)
 }
